@@ -1,0 +1,489 @@
+-- Create Shelter Table
+CREATE TABLE Shelter (
+    Shelter_ID       VARCHAR(7)       NOT NULL,
+    ShelterAddress   VARCHAR(30), 
+    ShelterState     VARCHAR(10), 
+    ShelterZipcode   VARCHAR(5), 
+    ShelterContact   VARCHAR(15), 
+    ShelterCapacity  NUMBER(3),
+    ShelterType      VARCHAR(20),
+    PRIMARY KEY (Shelter_ID),
+    CONSTRAINT chk_zipcode_format CHECK (REGEXP_LIKE(ShelterZipcode, '^\d{5}$')),
+    CONSTRAINT chk_contact_format CHECK (REGEXP_LIKE(ShelterContact, '^\d{3}-\d{7}$'))
+);
+
+
+-- Create ShelterStaff Table
+CREATE TABLE ShelterStaff (
+    Staff_ID        VARCHAR(7)       NOT NULL,
+    StaffName       VARCHAR(100), 
+    StaffAge        NUMBER(3), 
+    StaffContact    VARCHAR(15), 
+    StaffType       VARCHAR(20),
+    Shelter_ID      VARCHAR(7),
+    PRIMARY KEY (Staff_ID),
+    FOREIGN KEY (Shelter_ID) REFERENCES Shelter(Shelter_ID)
+);
+
+
+-- Create Training Table
+CREATE TABLE Training (
+    Training_No      VARCHAR(7)       NOT NULL,
+    TrainingName     VARCHAR(20), 
+    TrainingDesc     VARCHAR(30), 
+    TrainingDuration VARCHAR(50), 
+    PRIMARY KEY (Training_No)
+);
+
+
+
+-- Create Medication Table
+CREATE TABLE Medication (
+    Medication_Code  VARCHAR(7)       NOT NULL,
+    MedicationType   VARCHAR(20), 
+    MedicationDesc   VARCHAR(30), 
+    DosageAmount     VARCHAR(10), 
+    PRIMARY KEY (Medication_Code)
+);
+
+
+-- Create Adopter Table
+CREATE TABLE Adopter (
+    Adopter_ID      VARCHAR(4)       NOT NULL,
+    AdopterName     VARCHAR(25)     NOT NULL,
+    AdopterAge      NUMBER(3),
+    AdopterGender   CHAR(1),
+    AdopterRace     VARCHAR(20),
+    AdopterPhone    VARCHAR(14),
+    AdopterEmail    VARCHAR(35),
+    AdopterAddress  VARCHAR(50),
+    AdopterOccupation VARCHAR(50),
+    AdopterSalary   NUMBER(10,2),
+    PRIMARY KEY (Adopter_ID),
+    CONSTRAINT chk_phone_format CHECK (REGEXP_LIKE(AdopterPhone, '^\d{3}-\d{7}$')),
+    CONSTRAINT chk_adopter_email CHECK (REGEXP_LIKE(AdopterEmail,'^[a-zA-Z]\w+@(\S+)$'))
+);
+
+
+-- Create Delivery Table
+CREATE TABLE Delivery (
+    Delivery_ID    VARCHAR(5)    NOT NULL, 
+    DeliveryMethod VARCHAR(20), 
+    DeliveryAddress VARCHAR(50), 
+    DeliveryDateTime DATE,
+    PRIMARY KEY (Delivery_ID)
+);
+
+
+-- Create Adoption Table
+CREATE TABLE Adoption (
+    Adoption_Number VARCHAR(7)       NOT NULL,
+    AdoptionDate    DATE,
+    VeterinaryFee   NUMBER(7,2), 
+    AdoptionFee     NUMBER(7,2),
+    AdoptionStatus  VARCHAR(10),
+    AdoptionFeedback VARCHAR(255),
+    Adopter_ID      VARCHAR(7),
+    Delivery_ID     VARCHAR(5), 
+    PRIMARY KEY (Adoption_Number),
+    FOREIGN KEY (Adopter_ID) REFERENCES Adopter(Adopter_ID),
+    FOREIGN KEY (Delivery_ID) REFERENCES Delivery(Delivery_ID),
+    CONSTRAINT chk_adoption_status CHECK (UPPER(AdoptionStatus) IN ('PENDING','DONE'))
+);
+
+
+-- Create Animal Table
+CREATE TABLE Animal (
+    Animal_ID     VARCHAR(7)       NOT NULL,
+    AnimalAge     NUMBER(2), 
+    AnimalType    VARCHAR(10), 
+    AnimalBreed   VARCHAR(30), 
+    AnimalGender  CHAR(1), 
+    AnimalColor   VARCHAR(10),
+    AnimalWeight  NUMBER(5,2),
+    DateRescued   DATE, 
+    Shelter_ID    VARCHAR(7),
+    Adoption_Number VARCHAR(7),
+    PRIMARY KEY (Animal_ID),
+    FOREIGN KEY (Shelter_ID) REFERENCES Shelter(Shelter_ID), 
+    FOREIGN KEY (Adoption_Number) REFERENCES Adoption(Adoption_Number),
+    CONSTRAINT chk_animal_gender CHECK (UPPER(AnimalGender) IN ('M','F'))
+);
+
+
+
+-- Create MedicalCheckup Table
+CREATE TABLE MedicalCheckup (
+    Checkup_No     VARCHAR(5)       NOT NULL,
+    CheckupDate    DATE,  
+    CheckupDesc    VARCHAR(30),  
+    CheckupType    VARCHAR(20),
+    Animal_ID      VARCHAR(7),
+    PRIMARY KEY (Checkup_No),
+    FOREIGN KEY (Animal_ID) REFERENCES Animal(Animal_ID)
+);
+
+
+-- Create MedicationDetails Table
+CREATE TABLE MedicationDetails (
+    Medical_ID      VARCHAR(5)       NOT NULL,
+    HealthStatus    VARCHAR(50), 
+    MedicationDate  DATE, 
+    Checkup_No      VARCHAR(5),
+    Medication_Code VARCHAR(7),
+    PRIMARY KEY (Medical_ID),
+    FOREIGN KEY (Checkup_No) REFERENCES MedicalCheckup(Checkup_No), 
+    FOREIGN KEY (Medication_Code) REFERENCES Medication(Medication_Code)
+);
+
+
+-- Create AnimalTrainingLists Table
+CREATE TABLE AnimalTrainingLists (
+    TrainingList_No  VARCHAR(4)       NOT NULL,
+    TrainingDate     DATE, 
+    Training_No      VARCHAR(7),
+    Animal_ID        VARCHAR(7),
+    PRIMARY KEY (TrainingList_No),
+    FOREIGN KEY (Animal_ID) REFERENCES Animal(Animal_ID),
+    FOREIGN KEY (Training_No) REFERENCES Training(Training_No)
+);
+
+
+
+
+-- Create Donation Table
+CREATE TABLE Donation (
+    Donation_No    VARCHAR(5)       NOT NULL,
+    DonationAmount NUMBER(10,2), 
+    DonationDesc   VARCHAR(30), 
+    DonationDate   DATE, 
+    Adopter_ID	   VARCHAR(7),
+    PRIMARY KEY (Donation_No),
+    FOREIGN KEY (Adopter_ID) REFERENCES Adopter(Adopter_ID)
+);
+
+
+
+-- Insert Statements
+INSERT INTO Shelter VALUES ('S001', '123 Pet St', 'Selangor', '47301', '012-3456789', 50, 'Dog');
+INSERT INTO Shelter VALUES ('S002', '456 Animal Ave', 'Penang', '11900', '019-8765432', 40, 'Cat');
+INSERT INTO Shelter VALUES ('S003', '789 Furry Ln', 'Perak', '30500', '017-2233445', 30, 'Mixed');
+INSERT INTO Shelter VALUES ('S004', '321 Shelter Rd', 'Johor', '80000', '013-1122334', 20, 'Dog');
+INSERT INTO Shelter VALUES ('S005', '654 Haven Pl', 'Kedah', '05100', '014-5566778', 25, 'Cat');
+INSERT INTO Shelter VALUES ('S006', '987 Stray Dr', 'Melaka', '75000', '016-6677889', 35, 'Mixed');
+INSERT INTO Shelter VALUES ('S007', '159 Rescue St', 'Selangor', '47100', '011-9988776', 50, 'Dog');
+INSERT INTO Shelter VALUES ('S008', '753 Adopt Blvd', 'Penang', '11700', '018-8877665', 40, 'Cat');
+INSERT INTO Shelter VALUES ('S009', '357 Care St', 'Perak', '30200', '010-3344556', 30, 'Mixed');
+INSERT INTO Shelter VALUES ('S010', '246 Paws Ave', 'Johor', '80100', '015-6677880', 20, 'Dog');
+
+
+
+--insert shelter staff
+INSERT INTO ShelterStaff VALUES ('SS001', 'Alice Tan', 30, '012-3344556', 'Veterinarian', 'S001');
+INSERT INTO ShelterStaff VALUES ('SS004', 'David Wong', 35, '013-6677889', 'Admin', 'S004');
+INSERT INTO ShelterStaff VALUES ('SS006', 'Frank Chan', 29, '016-8899001', 'Caretaker', 'S006');
+INSERT INTO ShelterStaff VALUES ('SS007', 'Grace Ng', 26, '011-9900112', 'Cleaner', 'S007');
+INSERT INTO ShelterStaff VALUES ('SS008', 'Henry Teo', 31, '018-2233445', 'Admin', 'S008');
+INSERT INTO ShelterStaff VALUES ('SS010', 'Jack Lim', 34, '015-5566778', 'Caretaker', 'S010');
+INSERT INTO ShelterStaff VALUES ('SS011', 'Ace Tan', 30, '012-3344556', 'Manager', 'S001');
+INSERT INTO ShelterStaff VALUES ('SS012', 'Bobby Lee', 25, '019-4455667', 'Manager', 'S002');
+INSERT INTO ShelterStaff VALUES ('SS013', 'Caroline Lim', 28, '017-5566778', 'Manager', 'S003');
+INSERT INTO ShelterStaff VALUES ('SS014', 'Davidson Wang', 35, '013-6677889', 'Manager', 'S004');
+INSERT INTO ShelterStaff VALUES ('SS015', 'Evason Hoo', 32, '014-7788990', 'Manager', 'S005');
+INSERT INTO ShelterStaff VALUES ('SS016', 'Frank Cheng', 29, '016-8899001', 'Manager', 'S006');
+INSERT INTO ShelterStaff VALUES ('SS017', 'Grey Wong', 26, '011-9900112', 'Manager', 'S007');
+INSERT INTO ShelterStaff VALUES ('SS018', 'Henry Teong', 31, '018-2233445', 'Manager', 'S008');
+INSERT INTO ShelterStaff VALUES ('SS019', 'Ivy Tan', 27, '010-3344556', 'Manager', 'S009');
+INSERT INTO ShelterStaff VALUES ('SS020', 'Jacky Low', 34, '015-5566778', 'Manager', 'S010');
+INSERT INTO ShelterStaff VALUES ('SS021', 'Agen Tong', 30, '012-3344556', 'Trainer', 'S001');
+INSERT INTO ShelterStaff VALUES ('SS022', 'Bob Liao', 25, '019-4455667', 'Trainer', 'S002');
+INSERT INTO ShelterStaff VALUES ('SS023', 'Catrine Lim', 28, '017-5566778', 'Trainer', 'S003');
+INSERT INTO ShelterStaff VALUES ('SS024', 'Dave Ang', 35, '013-6677889', 'Trainer', 'S004');
+INSERT INTO ShelterStaff VALUES ('SS025', 'Evalos Tan', 32, '014-7788990', 'Trainer', 'S005');
+INSERT INTO ShelterStaff VALUES ('SS026', 'Nigel Cheng', 29, '016-8899001', 'Trainer', 'S006');
+INSERT INTO ShelterStaff VALUES ('SS027', 'Goof Wong', 26, '011-9900112', 'Trainer', 'S007');
+INSERT INTO ShelterStaff VALUES ('SS028', 'Hens Teong', 31, '018-2233445', 'Trainer', 'S008');
+INSERT INTO ShelterStaff VALUES ('SS029', 'Ivos Tan', 27, '010-3344556', 'Trainer', 'S009');
+INSERT INTO ShelterStaff VALUES ('SS030', 'Jalus Low', 34, '015-5566778', 'Trainer', 'S010');
+
+
+--training
+INSERT INTO Training VALUES ('T001', 'Obedience', 'Basic obedience training', '4 weeks');
+INSERT INTO Training VALUES ('T002', 'Agility', 'Agility course training', '6 weeks');
+INSERT INTO Training VALUES ('T003', 'Housebreaking', 'Housebreaking for pets', '3 weeks');
+INSERT INTO Training VALUES ('T004', 'Socialization', 'Socialization training', '5 weeks');
+INSERT INTO Training VALUES ('T005', 'Recall', 'Recall command training', '2 weeks');
+INSERT INTO Training VALUES ('T006', 'Tracking', 'Tracking skills training', '8 weeks');
+INSERT INTO Training VALUES ('T007', 'Protection', 'Protection dog training', '10 weeks');
+INSERT INTO Training VALUES ('T008', 'Search and Rescue', 'Search and rescue training', '12 weeks');
+INSERT INTO Training VALUES ('T009', 'Therapy', 'Therapy dog training', '6 weeks');
+INSERT INTO Training VALUES ('T010', 'Clicker', 'Clicker training basics', '2 weeks');
+
+
+
+
+
+--medication
+INSERT INTO Medication VALUES ('M001', 'Antibiotic', 'Amoxicillin', '500mg');
+INSERT INTO Medication VALUES ('M002', 'Antiparasitic', 'Ivermectin', '10mg');
+INSERT INTO Medication VALUES ('M003', 'Vaccine', 'Rabies Vaccine', '1ml');
+INSERT INTO Medication VALUES ('M004', 'Pain Relief', 'Tramadol', '50mg');
+INSERT INTO Medication VALUES ('M005', 'Anti-inflammatory', 'Prednisone', '5mg');
+INSERT INTO Medication VALUES ('M006', 'Antifungal', 'Ketoconazole', '200mg');
+INSERT INTO Medication VALUES ('M007', 'Antiviral', 'Acyclovir', '400mg');
+INSERT INTO Medication VALUES ('M008', 'Antiseptic', 'Betadine Solution', '5ml');
+INSERT INTO Medication VALUES ('M009', 'Antihistamine', 'Diphenhydramine', '25mg');
+INSERT INTO Medication VALUES ('M010', 'Vaccine', 'Distemper Vaccine', '1ml');
+
+
+
+
+--adopter
+INSERT INTO Adopter VALUES('A001', 'Xuan Yu'        , 23, 'M', 'Chinese', '012-3456789', 'XYu@gmail.com', '123 Jalan ABC, KL', 'Engineer', 7000.00);
+INSERT INTO Adopter VALUES('A002', 'Ching Keat'     , 24, 'M', 'Malay', '012-9876543', 'CKeat@gmail.com', '456 Jalan DEF, Penang', 'Doctor', 8500.00);
+INSERT INTO Adopter VALUES('A003', 'Kah Jun'        , 22, 'M', 'Indian', '019-8765432', 'KJun@gmail.com', '789 Jalan GHI, Ipoh', 'Teacher', 6000.00);
+INSERT INTO Adopter VALUES('A004', 'Mei Ling'       , 21, 'F', 'Chinese','017-7654321', 'MLing@gmail.com','321 Jalan JKL, Melaka', 'Lawyer', 9000.00);
+INSERT INTO Adopter VALUES('A005', 'Ahmad Zaki'     , 43, 'M', 'Malay', '013-2345678', 'AZaki@gmail.com', '654 Jalan MNO, Johor Bahru', 'Engineer', 7200.00);
+INSERT INTO Adopter VALUES('A006', 'Siti Aminah'    , 32, 'F', 'Malay', '018-1234567', 'Siti@gmail.com', '987 Jalan PQR, KL', 'Accountant', 6800.00);
+INSERT INTO Adopter VALUES('A007', 'Ravi Kumar'     , 23, 'M', 'Indian', '012-2345678', 'Ravi@gmail.com', '432 Jalan STU, KL', 'Technician', 5800.00);
+INSERT INTO Adopter VALUES('A008', 'Tan Wei'        , 21, 'F', 'Chinese', '017-9871234', 'TWei@gmail.com', '876 Jalan VWX, Seremban', 'Nurse', 5400.00);
+INSERT INTO Adopter VALUES('A009', 'Jasmine Kaur'   , 65, 'F', 'Indian', '019-3219876', 'JasmineK@gmail.com', '543 Jalan YZA, KL', 'Pharmacist', 7500.00);
+INSERT INTO Adopter VALUES('A010', 'Ali Imran'      , 55, 'M', 'Malay', '016-7659871', 'AliIm@gmail.com', '123 Jalan ABC, KL', 'Architect', 9200.00);
+INSERT INTO Adopter VALUES('A011', 'Sophia Tan'     , 44, 'F', 'Chinese', '013-8765432', 'SophiaT@gmail.com', '654 Jalan DEF, Penang', 'Graphic Designer', 5800.00);
+INSERT INTO Adopter VALUES('A012', 'Lina Ahmad'     , 35, 'F', 'Malay', '014-7654321', 'LinaAmd@gmail.com', '987 Jalan GHI, Ipoh', 'Software Developer', 7300.00);
+INSERT INTO Adopter VALUES('A013', 'Amir Hamzah'    , 47, 'M', 'Malay', '019-2345678', 'AmirHmzh@gmail.com', '321 Jalan JKL, Melaka', 'Civil Engineer', 8200.00);
+INSERT INTO Adopter VALUES('A014', 'Priya Menon'    , 45, 'F', 'Indian', '017-1234567', 'Priya@gmail.com', '654 Jalan MNO, Johor Bahru', 'Project Manager', 8800.00);
+INSERT INTO Adopter VALUES('A015', 'Jason Lim'      , 51, 'M', 'Chinese', '012-8765432', 'JasonL@gmail.com', '987 Jalan PQR, KL', 'Banker', 8400.00);
+INSERT INTO Adopter VALUES('A016', 'Aisha Ali'      , 52, 'F', 'Malay', '018-6543210', 'AishaAli@gmail.com', '321 Jalan STU, Seremban', 'HR Manager', 7800.00);
+INSERT INTO Adopter VALUES('A017', 'Ramesh Singh'   , 39, 'M', 'Indian', '019-7654321', 'Ramesh@gmail.com', '543 Jalan VWX, KL', 'Consultant', 8100.00);
+INSERT INTO Adopter VALUES('A018', 'Lily Wong'      , 77, 'F', 'Chinese', '017-6543210', 'LilyWg@gmail.com', '876 Jalan YZA, KL', 'Account Executive', 6000.00);
+INSERT INTO Adopter VALUES('A019', 'Hafiz Rahman'   , 49, 'M', 'Malay', '013-5432109', 'Hafiz@gmail.com', '123 Jalan ABC, Kelantan', 'Marketing Specialist', 7200.00);
+INSERT INTO Adopter VALUES('A020', 'Farah Zain'     , 24, 'F', 'Malay', '014-3210987', 'FarahZain@gmail.com', '456 Jalan DEF, KL', 'Business Analyst', 8500.00);
+INSERT INTO Adopter VALUES('A021', 'Aaron Tan'      , 59, 'M', 'Chinese', '016-2109876', 'AaronT@gmail.com', '789 Jalan GHI, Pahang', 'Operations Manager', 9300.00);
+INSERT INTO Adopter VALUES('A022', 'Nurul Ain'      , 38, 'F', 'Malay',  '019-0987654', 'NurulA@gmail.com', '987 Jalan JKL, Sabah', 'Financial Analyst', 8900.00);
+INSERT INTO Adopter VALUES('A023', 'Shanti Kumar'   , 74, 'F', 'Indian', '017-9876543', 'ShantiK@gmail.com', '321 Jalan MNO, KL', 'Data Scientist', 9100.00);
+INSERT INTO Adopter VALUES('A024', 'Daniel Wong'    , 31, 'M', 'Chinese','012-6789012', 'DanielWg@gmail.com', '654 Jalan PQR, Negeri Sembilan', 'Supply Chain Manager', 8700.00);
+INSERT INTO Adopter VALUES('A025', 'Aminah Hussein' , 28, 'F', 'Malay',  '018-1230987', 'AminahH@gmail.com', '987 Jalan STU, KL', 'Research Scientist', 8600.00);
+INSERT INTO Adopter VALUES('A026', 'Hafiz Rahman'   , 35, 'M', 'Malay',  '019-4567890', 'HafizR@gmail.com', '123 Jalan ABC, KL', 'Software Engineer', 9200.00);
+INSERT INTO Adopter VALUES('A027', 'Lim Wei Ling'   , 32, 'F', 'Chinese','012-9876543', 'WeiLingL@gmail.com', '456 Jalan DEF, KL', 'Accountant', 7800.00);
+INSERT INTO Adopter VALUES('A028', 'Rajesh Kumar'   , 40, 'M', 'Indian', '017-5432109', 'RajeshK@gmail.com', '789 Jalan GHI, KL', 'Bank Manager', 10500.00);
+INSERT INTO Adopter VALUES('A029', 'Nurul Izzah'    , 29, 'F', 'Malay',  '016-2345678', 'NurulI@gmail.com', '321 Jalan JKL, KL', 'Marketing Executive', 6800.00);
+INSERT INTO Adopter VALUES('A030', 'Chong Kah Wai'  , 38, 'M', 'Chinese', '013-6789012', 'KahWaiC@gmail.com', '654 Jalan MNO, KL', 'Architect', 9800.00);
+INSERT INTO Adopter VALUES('A031', 'Shalini Devi'   , 26, 'F', 'Indian', '018-7654321', 'ShaliniD@gmail.com', '987 Jalan PQR, KL', 'Graphic Designer', 6100.00);
+INSERT INTO Adopter VALUES('A032', 'Tan Siew Mei'   , 34, 'F', 'Chinese', '012-3456789', 'SiewMeiT@gmail.com', '123 Jalan STU, KL', 'Pharmacist', 9200.00);
+INSERT INTO Adopter VALUES('A033', 'Amirul Hakim'   , 30, 'M', 'Malay', '019-5678901', 'AmirulH@gmail.com', '456 Jalan VWX, KL', 'Lawyer', 10200.00);
+INSERT INTO Adopter VALUES('A034', 'Anjali Sharma'  , 28, 'F', 'Indian', '017-6789123', 'AnjaliS@gmail.com', '789 Jalan YZ, KL', 'HR Manager', 8500.00);
+INSERT INTO Adopter VALUES('A035', 'Lee Min Ho'     , 36, 'M', 'Chinese', '016-7890123', 'MinHoL@gmail.com', '321 Jalan ABCD, KL', 'Surgeon', 15000.00);
+INSERT INTO Adopter VALUES('A036', 'Farah Nadia'    , 27, 'F', 'Malay', '018-8901234', 'FarahN@gmail.com', '654 Jalan EFG, KL', 'Teacher', 5200.00);
+INSERT INTO Adopter VALUES('A037', 'Kumaravel Raj'  , 39, 'M', 'Indian', '013-9012345', 'KumaravelR@gmail.com', '987 Jalan HIJ, KL', 'Civil Engineer', 9500.00);
+
+
+
+
+
+
+
+--delivery
+INSERT INTO Delivery VALUES ('D001', 'Courier', '123 Main St, KL', DATE '2023-04-07');
+INSERT INTO Delivery VALUES ('D003', 'Courier', '789 Garden St, Ipoh', DATE '2023-07-25');
+INSERT INTO Delivery VALUES ('D006', 'Self-Pickup', '56 Oak Rd, KL', DATE '2023-06-29');
+INSERT INTO Delivery VALUES ('D011', 'Courier', '21 Pine Ave, Ipoh', DATE '2023-10-25');
+INSERT INTO Delivery VALUES ('D014', 'Self-Pickup', '25 Birch Rd, Melaka', DATE '2023-12-28');
+INSERT INTO Delivery VALUES ('D015', 'Self-Pickup', '12 Cedar Rd, Shah Alam', DATE '2023-02-08');
+INSERT INTO Delivery VALUES ('D017', 'Courier', '33 Elm St, Seremban', DATE '2023-11-14');
+INSERT INTO Delivery VALUES ('D024', 'Self-Pickup', '9 Cypress St, Miri', DATE '2023-08-11');
+INSERT INTO Delivery VALUES ('D028', 'Courier', '303 Lily Ln, Penang', DATE '2023-12-20');
+INSERT INTO Delivery VALUES ('D030', 'Courier', '505 Jasmine Ave, Melaka', DATE '2023-05-21');
+INSERT INTO Delivery VALUES ('D031', 'Self-Pickup', '606 Sunflower Rd, Seremban', DATE '2023-01-21');
+INSERT INTO Delivery VALUES ('D032', 'Courier', '707 Daisy Ln, KL', DATE '2023-05-15');
+INSERT INTO Delivery VALUES ('D036', 'Courier', '1111 Marigold St, Sandakan', DATE '2023-10-05');
+INSERT INTO Delivery VALUES ('D037', 'Self-Pickup', '1212 Dahlia Ln, Butterworth', DATE '2023-12-06');
+
+
+
+
+
+
+
+--adoption
+INSERT INTO Adoption VALUES ('AD23001', DATE '2023-04-04', 100.00, 300.00, 'DONE', 'Great service!', 'A001', 'D001');
+INSERT INTO Adoption VALUES ('AD23003', DATE '2023-07-21', 110.00, 310.00, 'DONE', 'Smooth process!', 'A003', 'D003');
+INSERT INTO Adoption VALUES ('AD23006', DATE '2023-06-26', 115.00, 315.00, 'DONE', 'Excellent experience!', 'A006', 'D006');
+INSERT INTO Adoption VALUES ('AD23011', DATE '2023-10-20', 130.00, 310.00, 'DONE', 'Smooth adoption process!', 'A011', 'D011');
+INSERT INTO Adoption VALUES ('AD23014', DATE '2023-12-26', 110.00, 270.00, 'DONE', 'Very satisfied!', 'A014', 'D014');
+INSERT INTO Adoption VALUES ('AD23015', DATE '2023-02-05', 160.00, 340.00, 'DONE', 'Highly recommend!', 'A015', 'D015');
+INSERT INTO Adoption VALUES ('AD23017', DATE '2023-08-27', 140.00, 310.00, 'DONE', 'Wonderful service!', 'A017', 'D017');
+INSERT INTO Adoption VALUES ('AD23024', DATE '2023-08-09', 130.00, 300.00, 'DONE', 'Very smooth process!', 'A024', 'D024');
+INSERT INTO Adoption VALUES ('AD23028', DATE '2023-12-17', 140.00, 340.00, 'DONE', 'Highly satisfied!', 'A028', 'D028');
+INSERT INTO Adoption VALUES ('AD23030', DATE '2023-05-18', 145.00, 345.00, 'DONE', 'Smooth experience!', 'A030', 'D030');
+INSERT INTO Adoption VALUES ('AD23031', DATE '2023-01-17', 150.00, 350.00, 'DONE', 'Very professional!', 'A031', 'D031');
+INSERT INTO Adoption VALUES ('AD23032', DATE '2023-05-13', 160.00, 360.00, 'DONE', 'Excellent service!', 'A032', 'D032');
+INSERT INTO Adoption VALUES ('AD23036', DATE '2023-10-01', 145.00, 345.00, 'DONE', 'Very smooth process!', 'A036', 'D036');
+INSERT INTO Adoption VALUES ('AD23037', DATE '2023-12-01', 150.00, 350.00, 'DONE', 'Happy with my new pet!', 'A037', 'D037');
+
+
+
+
+
+
+
+
+
+
+--Animal
+INSERT INTO Animal VALUES ('PET001', 2, 'Dog', 'Beagle', 'M', 'Brown', 10.5, DATE '2021-03-15', 'S001', 'AD23001');
+INSERT INTO Animal VALUES ('PET002', 3, 'Cat', 'Siamese', 'F', 'White', 5.2, DATE '2022-08-03', 'S002', null);
+INSERT INTO Animal VALUES ('PET003', 1, 'Dog', 'Labrador', 'M', 'Yellow', 12.8, DATE '2023-07-14', 'S003', 'AD23003');
+INSERT INTO Animal VALUES ('PET004', 4, 'Cat', 'Persian', 'F', 'Gray', 4.9, DATE '2023-10-10', 'S004', null);
+INSERT INTO Animal VALUES ('PET005', 2, 'Dog', 'Bulldog', 'M', 'Brindle', 15.0, DATE '2023-06-22', 'S005', null);
+INSERT INTO Animal VALUES ('PET006', 3, 'Cat', 'Maine Coon', 'F', 'Black', 6.7, DATE '2022-04-06', 'S006', 'AD23006');
+INSERT INTO Animal VALUES ('PET007', 1, 'Dog', 'Poodle', 'M', 'White', 8.5, DATE '2021-09-21', 'S007', null);
+INSERT INTO Animal VALUES ('PET008', 2, 'Cat', 'Ragdoll', 'F', 'Blue', 5.1, DATE '2023-07-05', 'S008', null);
+INSERT INTO Animal VALUES ('PET009', 4, 'Dog', 'Golden Retriever', 'M', 'Golden', 20.0, DATE '2023-11-03', 'S009', null);
+INSERT INTO Animal VALUES ('PET010', 3, 'Cat', 'Bengal', 'F', 'Spotted', 6.0, DATE '2022-05-18', 'S010', null);
+INSERT INTO Animal VALUES ('PET011', 2, 'Dog', 'Chihuahua', 'M', 'Brown', 2.5, DATE '2023-12-07', 'S001', 'AD23011');
+INSERT INTO Animal VALUES ('PET012', 3, 'Cat', 'Abyssinian', 'F', 'Ruddy', 4.0, DATE '2023-09-11', 'S002', null);
+INSERT INTO Animal VALUES ('PET013', 1, 'Dog', 'Dachshund', 'M', 'Black', 6.2, DATE '2023-01-28', 'S003', null);
+INSERT INTO Animal VALUES ('PET014', 4, 'Cat', 'Scottish Fold', 'F', 'Gray', 4.3, DATE '2022-02-21', 'S004', 'AD23014');
+INSERT INTO Animal VALUES ('PET015', 3, 'Dog', 'Shih Tzu', 'M', 'White', 6.8, DATE '2023-05-30', 'S005', 'AD23015');
+INSERT INTO Animal VALUES ('PET016', 2, 'Cat', 'British Shorthair', 'F', 'Blue', 5.5, DATE '2023-04-10', 'S006', null);
+INSERT INTO Animal VALUES ('PET017', 1, 'Dog', 'Beagle', 'M', 'Tricolor', 11.0, DATE '2023-03-09', 'S007', 'AD23017');
+INSERT INTO Animal VALUES ('PET018', 4, 'Cat', 'Siamese', 'F', 'Seal Point', 4.5, DATE '2021-08-16', 'S008', null);
+INSERT INTO Animal VALUES ('PET019', 2, 'Dog', 'Pomeranian', 'M', 'Orange', 5.5, DATE '2021-07-29', 'S009', null);
+INSERT INTO Animal VALUES ('PET020', 3, 'Cat', 'Persian', 'F', 'Gray', 4.8, DATE '2023-06-09', 'S010', null);
+INSERT INTO Animal VALUES ('PET021', 1, 'Dog', 'Labrador', 'M', 'Yellow', 12.0, DATE '2023-09-17', 'S010', null);
+INSERT INTO Animal VALUES ('PET022', 4, 'Cat', 'Maine Coon', 'F', 'Black', 6.2, DATE '2022-02-19', 'S002', null);
+INSERT INTO Animal VALUES ('PET023', 2, 'Dog', 'Bulldog', 'M', 'Brindle', 14.5, DATE '2022-03-27', 'S003', null);
+INSERT INTO Animal VALUES ('PET024', 3, 'Cat', 'Ragdoll', 'F', 'Blue', 5.3, DATE '2021-07-08', 'S005', 'AD23024');
+INSERT INTO Animal VALUES ('PET025', 1, 'Dog', 'Poodle', 'M', 'White', 8.2, DATE '2023-10-27', 'S004', null);
+INSERT INTO Animal VALUES ('PET026', 3, 'Dog', 'Beagle', 'M', 'Brown', 12.5, DATE '2022-11-15', 'S001', null);
+INSERT INTO Animal VALUES ('PET027', 2, 'Cat', 'Siamese', 'F', 'Cream', 8.0, DATE '2023-05-11', 'S002', null);
+INSERT INTO Animal VALUES ('PET028', 4, 'Dog', 'Poodle', 'F', 'White', 10.0, DATE '2023-03-05', 'S003', 'AD23028');
+INSERT INTO Animal VALUES ('PET029', 1, 'Cat', 'Persian', 'M', 'Gray', 7.5, DATE '2023-06-20', 'S009', null);
+INSERT INTO Animal VALUES ('PET030', 5, 'Dog', 'Labrador', 'F', 'Black', 25.0, DATE '2021-04-25', 'S007', 'AD23030');
+INSERT INTO Animal VALUES ('PET031', 3, 'Cat', 'Maine Coon', 'M', 'Brown', 15.0, DATE '2023-12-01', 'S008', 'AD23031');
+INSERT INTO Animal VALUES ('PET032', 2, 'Dog', 'Bulldog', 'M', 'Brindle', 20.0, DATE '2022-10-02', 'S007', 'AD23032');
+INSERT INTO Animal VALUES ('PET033', 4, 'Cat', 'Ragdoll', 'F', 'Seal', 9.0, DATE '2023-05-21', 'S006', null);
+INSERT INTO Animal VALUES ('PET034', 6, 'Dog', 'Golden Retriever', 'M', 'Golden', 30.0, DATE '2022-01-12', 'S006', null);
+INSERT INTO Animal VALUES ('PET035', 2, 'Cat', 'Bengal', 'M', 'Spotted', 10.0, DATE '2023-09-24', 'S006', null);
+INSERT INTO Animal VALUES ('PET036', 3, 'Dog', 'Dachshund', 'F', 'Brown', 9.0, DATE '2023-11-20', 'S004', 'AD23036');
+INSERT INTO Animal VALUES ('PET037', 1, 'Cat', 'Sphynx', 'F', 'Pink', 6.0, DATE '2021-06-12', 'S008', 'AD23037');
+
+
+
+
+
+--Medicalcheckup
+INSERT INTO MedicalCheckup VALUES('MC001', DATE '2021-03-23', 'Routine checkup', 'General', 'PET001');
+INSERT INTO MedicalCheckup VALUES('MC002', DATE '2022-08-10', 'Fever and lethargy', 'Illness', 'PET002');
+INSERT INTO MedicalCheckup VALUES('MC003', DATE '2023-07-24', 'Routine vaccination', 'Vaccination', 'PET003');
+INSERT INTO MedicalCheckup VALUES('MC004', DATE '2023-10-19', 'Minor injury on paw', 'Injury', 'PET004');
+INSERT INTO MedicalCheckup VALUES('MC005', DATE '2023-06-29', 'Deworming and flea treatment', 'Preventive', 'PET005');
+INSERT INTO MedicalCheckup VALUES('MC006', DATE '2022-04-16', 'Diarrhea and dehydration', 'Illness', 'PET006');
+INSERT INTO MedicalCheckup VALUES('MC007', DATE '2021-09-30', 'Routine checkup', 'General', 'PET007');
+INSERT INTO MedicalCheckup VALUES('MC008', DATE '2023-07-12', 'Respiratory infection', 'Illness', 'PET008');
+INSERT INTO MedicalCheckup VALUES('MC009', DATE '2023-11-12', 'Routine checkup', 'General', 'PET009');
+INSERT INTO MedicalCheckup VALUES('MC010', DATE '2022-05-28', 'Eye infection', 'Illness', 'PET010');
+INSERT INTO MedicalCheckup VALUES('MC011', DATE '2023-12-14', 'Routine checkup', 'General', 'PET011');
+INSERT INTO MedicalCheckup VALUES('MC012', DATE '2023-09-19', 'Skin rash', 'Illness', 'PET012');
+INSERT INTO MedicalCheckup VALUES('MC013', DATE '2023-02-07', 'Routine vaccination', 'Vaccination', 'PET013');
+INSERT INTO MedicalCheckup VALUES('MC014', DATE '2022-03-02', 'Minor fracture', 'Injury', 'PET014');
+INSERT INTO MedicalCheckup VALUES('MC015', DATE '2023-06-08', 'Deworming and flea treatment', 'Preventive', 'PET015');
+INSERT INTO MedicalCheckup VALUES('MC016', DATE '2023-04-20', 'Ear infection', 'Illness', 'PET016');
+INSERT INTO MedicalCheckup VALUES('MC017', DATE '2023-03-17', 'Routine checkup', 'General', 'PET017');
+INSERT INTO MedicalCheckup VALUES('MC018', DATE '2021-08-25', 'Gastrointestinal issue', 'Illness', 'PET018');
+INSERT INTO MedicalCheckup VALUES('MC019', DATE '2021-08-07', 'Routine checkup', 'General', 'PET019');
+INSERT INTO MedicalCheckup VALUES('MC020', DATE '2023-06-18', 'Allergic reaction', 'Illness', 'PET020');
+INSERT INTO MedicalCheckup VALUES('MC021', DATE '2023-09-25', 'Deworming and vaccination', 'Preventive', 'PET021');
+INSERT INTO MedicalCheckup VALUES('MC022', DATE '2022-02-28', 'Respiratory infection', 'Illness', 'PET022');
+INSERT INTO MedicalCheckup VALUES('MC023', DATE '2022-04-05', 'Routine checkup', 'General', 'PET023');
+INSERT INTO MedicalCheckup VALUES('MC024', DATE '2021-07-16', 'Minor injury on leg', 'Injury', 'PET024');
+INSERT INTO MedicalCheckup VALUES('MC025', DATE '2023-11-05', 'Routine vaccination', 'Vaccination', 'PET025');
+INSERT INTO MedicalCheckup VALUES('MC026', DATE '2022-11-23', 'Routine checkup', 'General', 'PET026');
+INSERT INTO MedicalCheckup VALUES('MC027', DATE '2023-05-18', 'Skin infection', 'Illness', 'PET027');
+INSERT INTO MedicalCheckup VALUES('MC028', DATE '2023-03-13', 'Vaccination booster', 'Vaccination', 'PET028');
+INSERT INTO MedicalCheckup VALUES('MC029', DATE '2023-06-30', 'Digestive issues', 'Illness', 'PET029');
+INSERT INTO MedicalCheckup VALUES('MC030', DATE '2021-05-05', 'Routine checkup', 'General', 'PET030');
+INSERT INTO MedicalCheckup VALUES('MC031', DATE '2023-12-08', 'Minor wound on leg', 'Injury', 'PET031');
+INSERT INTO MedicalCheckup VALUES('MC032', DATE '2022-10-12', 'Routine vaccination', 'Vaccination', 'PET032');
+INSERT INTO MedicalCheckup VALUES('MC033', DATE '2023-05-29', 'Allergic reaction', 'Illness', 'PET033');
+INSERT INTO MedicalCheckup VALUES('MC034', DATE '2022-01-20', 'Routine checkup', 'General', 'PET034');
+INSERT INTO MedicalCheckup VALUES('MC035', DATE '2023-10-01', 'Ear infection', 'Illness', 'PET035');
+INSERT INTO MedicalCheckup VALUES('MC036', DATE '2023-11-27', 'Deworming treatment', 'Preventive', 'PET036');
+INSERT INTO MedicalCheckup VALUES('MC037', DATE '2021-06-21', 'Respiratory infection', 'Illness', 'PET037');
+
+-- MedicationDetails
+INSERT INTO MedicationDetails VALUES('MD001', 'Fever treatment', DATE '2022-08-13', 'MC002', 'M001');
+INSERT INTO MedicationDetails VALUES('MD002', 'Pain management for paw injury', DATE '2023-10-25', 'MC004', 'M004');
+INSERT INTO MedicationDetails VALUES('MD003', 'Rehydration and antibiotic therapy', DATE '2022-04-18', 'MC006', 'M001');
+INSERT INTO MedicationDetails VALUES('MD004', 'Respiratory infection treatment', DATE '2023-07-14', 'MC008', 'M001');
+INSERT INTO MedicationDetails VALUES('MD005', 'Eye infection treatment', DATE '2022-06-02', 'MC010', 'M001');
+INSERT INTO MedicationDetails VALUES('MD006', 'Skin rash treatment', DATE '2023-09-23', 'MC012', 'M006');
+INSERT INTO MedicationDetails VALUES('MD007', 'Fracture pain management', DATE '2022-03-06', 'MC014', 'M004');
+INSERT INTO MedicationDetails VALUES('MD008', 'Ear infection treatment', DATE '2023-04-28', 'MC016', 'M001');
+INSERT INTO MedicationDetails VALUES('MD009', 'Gastrointestinal issue treatment', DATE '2021-08-29', 'MC018', 'M001');
+INSERT INTO MedicationDetails VALUES('MD010', 'Allergic reaction treatment', DATE '2023-06-21', 'MC020', 'M009');
+INSERT INTO MedicationDetails VALUES('MD011', 'Respiratory infection treatment', DATE '2022-03-04', 'MC022', 'M001');
+INSERT INTO MedicationDetails VALUES('MD012', 'Leg injury treatment', DATE '2021-07-18', 'MC024', 'M004');
+INSERT INTO MedicationDetails VALUES('MD013', 'Skin infection treatment', DATE '2023-07-13', 'MC027', 'M006');
+INSERT INTO MedicationDetails VALUES('MD014', 'Digestive issues treatment', DATE '2023-07-29', 'MC029', 'M001');
+INSERT INTO MedicationDetails VALUES('MD015', 'Leg wound antiseptic treatment', DATE '2023-12-11', 'MC031', 'M008');
+INSERT INTO MedicationDetails VALUES('MD016', 'Allergic reaction treatment', DATE '2023-08-25', 'MC033', 'M009');
+INSERT INTO MedicationDetails VALUES('MD017', 'Ear infection treatment', DATE '2023-09-15', 'MC035', 'M001');
+INSERT INTO MedicationDetails VALUES('MD018', 'Respiratory infection antiseptic', DATE '2023-10-06', 'MC037', 'M008');
+INSERT INTO MedicationDetails VALUES('MD019', 'Routine checkup medication', DATE '2021-03-26', 'MC001', 'M001');
+INSERT INTO MedicationDetails VALUES('MD020', 'Routine vaccination', DATE '2023-07-26', 'MC003', 'M003');
+INSERT INTO MedicationDetails VALUES('MD021', 'Deworming and flea prevention', DATE '2023-07-03', 'MC005', 'M002');
+INSERT INTO MedicationDetails VALUES('MD022', 'General checkup', DATE '2021-10-01', 'MC007', 'M001');
+INSERT INTO MedicationDetails VALUES('MD023', 'Routine checkup treatment', DATE '2023-11-15', 'MC009', 'M001');
+INSERT INTO MedicationDetails VALUES('MD024', 'Routine vaccination', DATE '2023-02-09', 'MC013', 'M003');
+INSERT INTO MedicationDetails VALUES('MD025', 'Preventive deworming and treatment', DATE '2023-06-12', 'MC015', 'M002');
+INSERT INTO MedicationDetails VALUES('MD026', 'Routine checkup', DATE '2023-03-20', 'MC017', 'M001');
+INSERT INTO MedicationDetails VALUES('MD027', 'Routine checkup treatment', DATE '2021-08-10', 'MC019', 'M001');
+INSERT INTO MedicationDetails VALUES('MD028', 'Preventive treatment and vaccination', DATE '2023-09-28', 'MC021', 'M010');
+INSERT INTO MedicationDetails VALUES('MD029', 'Routine checkup medication', DATE '2023-06-24', 'MC023', 'M001');
+INSERT INTO MedicationDetails VALUES('MD030', 'Vaccination for prevention', DATE '2023-11-08', 'MC025', 'M003');
+INSERT INTO MedicationDetails VALUES('MD031', 'Routine checkup', DATE '2022-11-25', 'MC026', 'M001');
+INSERT INTO MedicationDetails VALUES('MD032', 'Vaccination booster', DATE '2023-03-16', 'MC028', 'M003');
+INSERT INTO MedicationDetails VALUES('MD033', 'Routine checkup medication', DATE '2021-05-08', 'MC030', 'M001');
+INSERT INTO MedicationDetails VALUES('MD034', 'Routine vaccination', DATE '2022-10-15', 'MC032', 'M003');
+INSERT INTO MedicationDetails VALUES('MD035', 'Routine checkup medication', DATE '2022-01-23', 'MC034', 'M001');
+INSERT INTO MedicationDetails VALUES('MD036', 'Deworming preventive treatment', DATE '2023-11-29', 'MC036', 'M002');
+
+-- AnimalTrainingLists
+INSERT INTO AnimalTrainingLists VALUES('L001', DATE '2023-04-05', 'T001', 'PET001');
+INSERT INTO AnimalTrainingLists VALUES('L002', DATE '2023-07-22', 'T003', 'PET003');
+INSERT INTO AnimalTrainingLists VALUES('L003', DATE '2023-06-27', 'T006', 'PET006');
+INSERT INTO AnimalTrainingLists VALUES('L004', DATE '2023-10-21', 'T001', 'PET011');
+INSERT INTO AnimalTrainingLists VALUES('L005', DATE '2023-12-27', 'T004', 'PET014');
+INSERT INTO AnimalTrainingLists VALUES('L006', DATE '2023-02-06', 'T005', 'PET015');
+INSERT INTO AnimalTrainingLists VALUES('L007', DATE '2023-08-28', 'T007', 'PET017');
+INSERT INTO AnimalTrainingLists VALUES('L008', DATE '2023-08-10', 'T008', 'PET024');
+INSERT INTO AnimalTrainingLists VALUES('L009', DATE '2023-12-18', 'T004', 'PET028');
+INSERT INTO AnimalTrainingLists VALUES('L010', DATE '2023-05-19', 'T007', 'PET030');
+INSERT INTO AnimalTrainingLists VALUES('L011', DATE '2023-01-18', 'T010', 'PET031');
+INSERT INTO AnimalTrainingLists VALUES('L012', DATE '2023-05-14', 'T009', 'PET032');
+INSERT INTO AnimalTrainingLists VALUES('L013', DATE '2023-10-02', 'T002', 'PET036');
+INSERT INTO AnimalTrainingLists VALUES('L014', DATE '2023-12-02', 'T007', 'PET037');
+
+-- Donation 
+INSERT INTO Donation VALUES('DN001', 130.00, 'Donation for medical expenses', DATE '2023-04-04', 'A001');
+INSERT INTO Donation VALUES('DN002', 150.00, 'Donation for food and supplies', DATE '2023-07-21', 'A003');
+INSERT INTO Donation VALUES('DN003', 100.00, 'Donation for care', DATE '2023-06-26', 'A006');
+INSERT INTO Donation VALUES('DN004', 250.00, 'Donation for shelter upkeep', DATE '2023-10-20', 'A011');
+INSERT INTO Donation VALUES('DN005', 200.00, 'Donation for veterinary care', DATE '2023-12-26', 'A014');
+INSERT INTO Donation VALUES('DN006', 300.00, 'Donation for training programs', DATE '2023-02-05', 'A015');
+INSERT INTO Donation VALUES('DN007', 100.00, 'Donation for animal rescue', DATE '2023-11-11', 'A017');
+INSERT INTO Donation VALUES('DN008', 200.00, 'Donation for outreach programs', DATE '2023-08-09', 'A024');
+INSERT INTO Donation VALUES('DN009', 250.00, 'Donation for special animals', DATE '2023-12-17', 'A028');
+INSERT INTO Donation VALUES('DN010', 150.00, 'Donation for adoption events', DATE '2023-05-18', 'A030');
+INSERT INTO Donation VALUES('DN011', 300.00, 'Donation for neuter programs', DATE '2023-01-17', 'A031');
+INSERT INTO Donation VALUES('DN012', 100.00, 'Donation for maintenance', DATE '2023-05-13', 'A032');
+INSERT INTO Donation VALUES('DN013', 200.00, 'Donation for emergency fund', DATE '2023-10-01', 'A036');
+INSERT INTO Donation VALUES('DN014', 250.00, 'Donation for new equipment', DATE '2023-12-01', 'A037');
+
+
+
+
+
+

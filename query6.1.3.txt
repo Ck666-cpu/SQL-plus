@@ -1,0 +1,94 @@
+-- Prompt user to enter date range
+ACCEPT start_date PROMPT 'Enter the start date rescued (YYYY-MM-DD): '; 
+-- Example input: 2023-01-01
+ACCEPT end_date PROMPT 'Enter the end date rescued (YYYY-MM-DD): ';   
+-- Example input: 2023-10-31
+
+-- Add new column animalStatus to the animal table
+ALTER TABLE animal
+ADD animalStatus VARCHAR(20);  
+-- This part is correct.
+
+-- Update animalStatus for adopted animals
+UPDATE animal
+SET animalStatus = 'Adopted'
+WHERE adoption_number IS NOT NULL;
+
+-- Update animalStatus for not adopted animals
+UPDATE animal
+SET animalStatus = 'Not Adopted'
+WHERE adoption_number IS NULL;
+
+
+--Create view for get each shelter total animal
+Create View Shelter_animal AS
+select
+   s.Shelter_Id,
+   s.ShelterState,
+   count(a.animal_id) AS Total_Animal
+FROM 
+   Shelter s JOIN Animal a 
+ON 
+   s.Shelter_id = a.Shelter_id
+GROUP BY
+   s.Shelter_Id,
+   s.ShelterState
+ORDER BY
+   s.Shelter_ID;
+
+--create view for each shelter total animal not adopted
+Create VIEW Animal_notAdopt AS
+select
+   s.Shelter_Id,
+   count(a.animalStatus) AS Not_Adopt
+FROM 
+   Shelter s JOIN Animal a
+ON 
+   s.shelter_ID = a.Shelter_ID
+WHERE
+   a.animalStatus = 'Not Adopted'
+GROUP BY
+   s.shelter_ID
+ORDER BY
+   s.shelter_ID;
+
+
+-- Set formatting options for output
+SET LINESIZE 120;
+SET PAGESIZE 50;
+COLUMN ShelterID FORMAT A10;
+COLUMN Type FORMAT A10;
+COLUMN staffname format a15;
+
+
+-- Title for the report
+TTITLE CENTER 'Animal not adopted in each Shelter and Respective Shelter Manager' SKIP 2;
+
+-- Break on to avoid repeated values
+BREAK on ShelterID on staffname on staffType on Total_Animal on Not_Adopted on "Not Adopted Rate (%)"
+
+SELECT 
+    sa.shelter_id AS ShelterID, 
+    ss.StaffName,
+    ss.staffType,
+    sa.Total_Animal,
+    an.Not_Adopt AS Not_Adopted,
+    ROUND(an.Not_Adopt * 100.0 / sa.Total_Animal, 2) AS "Not Adopted Rate (%)",
+    a.animal_id,
+    a.animaltype AS Type
+FROM 
+    shelter_animal sa 
+JOIN 
+    animal a ON a.shelter_ID = sa.Shelter_ID 
+JOIN 
+    SHELTERSTAFF ss ON ss.shelter_ID = sa.SHelter_ID
+JOIN
+    Animal_notAdopt an ON an.Shelter_ID = sa.shelter_ID
+WHERE 
+    a.animalStatus = 'Not Adopted'  -- Only include not adopted animals
+    AND a.dateRescued BETWEEN TO_DATE('&start_date', 'YYYY-MM-DD') AND TO_DATE('&end_date', 'YYYY-MM-DD') 
+    AND StaffType = 'Manager'
+GROUP BY 
+    sa.SHelter_ID, a.animal_id, a.animalType, ss.staffname, ss.staffType, sa.Total_Animal, an.Not_adopt
+ORDER BY 
+    sa.Shelter_ID;

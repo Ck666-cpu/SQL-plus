@@ -1,0 +1,64 @@
+-- Prompt user to enter date range
+ACCEPT start_date PROMPT 'Enter the start date rescued (YYYY-MM-DD): ' --2023-01-01
+ACCEPT end_date PROMPT 'Enter the end date rescued (YYYY-MM-DD): '     --2023-10-31
+
+CREATE VIEW Shelter_Total_Animal AS
+SELECT 
+    s.shelter_id,
+    count(a.animal_id) AS Total_Animal
+FROM
+    shelter s JOIN animal a
+ON 
+    s.shelter_id = a.shelter_id
+GROUP BY
+    s.shelter_id
+ORDER BY
+    s.shelter_id;
+
+CREATE VIEW shelter_Total_staff AS
+SELECT 
+    s.shelter_id,
+    count(ss.staff_ID) AS Total_staff
+FROM 
+    shelter s JOIN ShelterStaff ss
+ON 
+    s.shelter_id = ss.shelter_id
+GROUP BY 
+    s.shelter_id
+ORDER BY
+    s.shelter_id;
+
+
+
+-- Set formatting options for output
+SET LINESIZE 120
+SET PAGESIZE 50
+COLUMN Average_Age format 99.99
+COLUMN "Adoption Rate (%)" format A20
+
+-- Title for the report
+TTITLE CENTER 'Staff Allocation Effectiveness and Average Animal Age Report'  _Date SKIP 2
+
+SELECT 
+    sa.shelter_ID AS ShelterID,
+    sa.Total_Animal,
+    AVG(a.animalAge) AS Average_AGE,
+    sts.Total_Staff,
+    ROUND(sa.TOtal_Animal / sts.total_Staff, 2) AS Animal_Staff_Ratio,
+    ROUND(COUNT(CASE WHEN a.Adoption_Number IS NOT NULL THEN 1 END) * 100 / sa.Total_Animal, 2)|| '%' AS "Adoption Rate (%)"
+FROM 
+    shelter_Animal sa JOIN animal a
+ON 
+    sa.shelter_ID = a.Shelter_ID
+JOIN
+    Shelter_Total_Staff sts 
+ON
+    sts.shelter_ID = sa.shelter_ID
+WHERE
+     a.DateRescued BETWEEN TO_DATE('&start_date', 'YYYY-MM-DD') 
+                         AND TO_DATE('&end_date', 'YYYY-MM-DD')
+GROUP BY
+    sa.shelter_ID, sa.TOTAL_ANIMAL, sts.TOTAL_staff
+ORDER BY
+    sa.shelter_ID;
+

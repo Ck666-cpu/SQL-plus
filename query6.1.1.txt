@@ -1,0 +1,40 @@
+-- Prompt user to enter date range
+ACCEPT start_date PROMPT 'Enter the start date (YYYY-MM-DD): ' 
+--2023-01-01
+ACCEPT end_date PROMPT 'Enter the end date (YYYY-MM-DD): '     
+--2023-10-31
+
+-- Set formatting for the report
+SET LINESIZE 120
+SET PAGESIZE 50
+
+COLUMN Shelter_ID FORMAT A20
+COLUMN TotalAnimalsRescued FORMAT 9999
+COLUMN TotalAnimalsAdopted FORMAT 9999
+COLUMN Animal_Adoption_Rate FORMAT 990.99 
+
+TTITLE CENTER 'Top 5 Shelters with Highest Animal Adoption Rate' SKIP CENTER _DATE -
+
+-- Query to retrieve top 5 shelters based on Animal Adoption Rate
+SELECT * FROM (
+    SELECT 
+        s.Shelter_ID AS "Shelter ID", s.ShelterState AS "State",
+        COUNT(a.Animal_ID) AS "Total Animals Rescued",
+        COUNT(CASE WHEN a.Adoption_Number IS NOT NULL THEN 1 END) AS "Total Animals Adopted",
+        ROUND(COUNT(CASE WHEN a.Adoption_Number IS NOT NULL THEN 1 END) * 100 / 
+              COUNT(a.Animal_ID), 2) AS Animal_Adoption_Rate
+    FROM 
+        Shelter s
+    JOIN 
+        Animal a ON s.Shelter_ID = a.Shelter_ID
+    LEFT JOIN 
+        shelterStaff ss on ss.shelter_id = s.shelter_ID
+    WHERE 
+        a.DateRescued BETWEEN TO_DATE('&start_date', 'YYYY-MM-DD') 
+                         AND TO_DATE('&end_date', 'YYYY-MM-DD')
+    GROUP BY 
+        s.Shelter_ID, s.ShelterState
+    ORDER BY 
+        Animal_Adoption_Rate DESC
+) 
+WHERE ROWNUM <= 5;

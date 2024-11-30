@@ -1,0 +1,28 @@
+-- Prompt user to enter shelter IDs for the report
+ACCEPT shelter_ids PROMPT 'Enter the shelter IDs to view the information (comma-separated, e.g. S001,S002,S003):'
+
+-- Set the line and page sizes for output formatting
+SET LINESIZE 150
+SET PAGESIZE 50
+
+-- Title for the report with current date
+TTITLE CENTER 'Animal Information From Specific Shelter Report' _DATE -
+
+-- SQL query to select animal information from specified shelters
+SELECT 
+    a.Animal_ID AS "Animal ID",
+    a.AnimalAge AS "Age",
+    a.AnimalType AS "Species",
+    a.AnimalBreed AS "Breed",
+    a.AnimalGender AS "Gender",
+    a.AnimalWeight AS "Weight",
+    a.AnimalColor AS "Color",
+    s.Shelter_ID AS "Shelter ID"
+FROM 
+    Animal a
+JOIN 
+    Shelter s ON a.Shelter_ID = s.Shelter_ID
+WHERE 
+    s.Shelter_ID IN (SELECT TRIM(REGEXP_SUBSTR('&shelter_ids', '[^,]+', 1, LEVEL))
+                     FROM dual
+                     CONNECT BY REGEXP_SUBSTR('&shelter_ids', '[^,]+', 1, LEVEL) IS NOT NULL);

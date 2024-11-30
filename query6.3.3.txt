@@ -1,0 +1,37 @@
+-- Prompt user to enter date range for medical checkup
+ACCEPT start_date PROMPT 'Enter the start date for checkup (YYYY-MM-DD): ' -- e.g., 2023-01-01
+ACCEPT end_date PROMPT 'Enter the end date for checkup (YYYY-MM-DD): '     -- e.g., 2023-10-31
+
+-- Set formatting for the report
+SET LINESIZE 120
+SET PAGESIZE 50
+
+COLUMN Animal_ID FORMAT A15
+COLUMN AnimalType FORMAT A20
+COLUMN CheckupDesc FORMAT A30
+COLUMN CheckupDate FORMAT A15
+COLUMN MedicationDesc FORMAT A30
+COLUMN MedicationDate FORMAT A15
+
+TTITLE CENTER 'Animals with Latest Medical Checkup and Medications' SKIP CENTER _DATE -
+
+SELECT 
+    a.Animal_ID AS "Animal ID", 
+    a.AnimalType AS "Animal Type", 
+    mc.CheckupDesc AS "Checkup Description", 
+    mc.CheckupDate AS "Checkup Date", 
+    m.MedicationDesc AS "Medication Description",
+    md.MedicationDate AS "Medication Date"
+FROM 
+    Animal a
+JOIN 
+    MedicalCheckup mc ON a.Animal_ID = mc.Animal_ID
+JOIN 
+    MedicationDetails md ON mc.Checkup_No = md.Checkup_No
+JOIN 
+    Medication m ON md.Medication_Code = m.Medication_Code
+WHERE 
+    mc.CheckupDate BETWEEN TO_DATE('&start_date', 'YYYY-MM-DD') 
+                       AND TO_DATE('&end_date', 'YYYY-MM-DD')
+ORDER BY 
+    mc.CheckupDate DESC;
